@@ -4,5 +4,8 @@
 > Alarm
 > Beep
 
+### Stepper Motor
+> Driver used Stepper library
+
 ### Stepping Motor
-> 
+> Deriver only IO
