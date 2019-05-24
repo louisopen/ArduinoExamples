@@ -8,10 +8,10 @@
    VCC External 5V Source
    Gnd
 */
-#define IN1  8
-#define IN2  9
-#define IN3  10
-#define IN4  11
+#define IN1  8  //IN1 >> D8
+#define IN2  9  //IN2 >> D9
+#define IN3  10 //IN3 >> D10
+#define IN4  11 //IN4 >> D11
 
 int Steps = 0;
 boolean Direction = true;// gre
@@ -115,3 +115,30 @@ void SetDirection(){
   if(Steps>7){Steps=0;}
   if(Steps<0){Steps=7; }
 }
+
+/*****
+int t= 10;
+boolean a[]={1,1,0,0,0,0,0,1};
+boolean b[]={0,1,1,1,0,0,0,0};
+boolean c[]={0,0,0,1,1,1,0,0};
+boolean d[]={0,0,0,0,0,1,1,1};
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(8,OUTPUT);
+  pinMode(9,OUTPUT);
+  pinMode(10,OUTPUT);
+  pinMode(11,OUTPUT);
+}
+
+void loop() {
+  for(int i=0; i<8 ; i++){
+    digitalWrite(8,a[i]);
+    digitalWrite(9,b[i]);
+    digitalWrite(10,c[i]);
+    digitalWrite(11,d[i]);
+    delayMicroseconds(t);
+    Serial.println(i);
+  }
+}
+*/
