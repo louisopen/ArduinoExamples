@@ -1,9 +1,14 @@
 #include <Stepper.h>
-#define IN1  8  //IN1 >> D8
-#define IN2  9  //IN2 >> D9
-#define IN3  10 //IN3 >> D10
-#define IN4  11 //IN4 >> D11
+#define IN1  8  //IN1 >> D8 of Arduino IO
+#define IN2  9  //IN2 >> D9 of Arduino IO
+#define IN3  10 //IN3 >> D10 of Arduino IO
+#define IN4  11 //IN4 >> D11 of Arduino IO
 //STEP MOTOR 5V(28BYJ-48)這是我們在空調機內機的風向馬達
+//串口按鍵控制"1" 正反轉(低速)
+//串口按鍵控制"2" 低速 
+//串口按鍵控制"3" 中速
+//串口按鍵控制"4" 高速
+//串口按鍵控制" " 停止
 //change this to fit the number of steps per revolution for your motor
 const int stepsPerRevolution = 2048;  //the speed range 1~16 rpm
  

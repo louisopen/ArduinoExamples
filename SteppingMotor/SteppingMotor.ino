@@ -1,5 +1,5 @@
 /*
-   BYJ48 stepping motor code
+   28BYJ-48 stepping motor code
    Driver>>Arduino
    IN1 >> D8
    IN2 >> D9
