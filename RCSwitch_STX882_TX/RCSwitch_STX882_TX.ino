@@ -4,40 +4,74 @@
 
 //*-- ASK433 module --*//
 #include <RCSwitch.h>
-RCSwitch myRFTX = RCSwitch();     //定义发送端
-//RCSwitch mySwitch = RCSwitch(); //定义接收端
+RCSwitch myRFTX = RCSwitch();    
+//RCSwitch mySwitch = RCSwitch(); 
 
 //*-- DHT22 --*//
 #include <Wire.h>
 #include "DHT.h"
-#define _dhtpin   4     //D4
-#define _dhttype  DHT22 //DHT 22  (AM2302), AM2321
+#define _dhtpin   4       //D4
+#define _dhttype  DHT22   //DHT 22  (AM2302), AM2321
 //#define _dhttype DHT21  //DHT 21 (AM2301)
 DHT dht22( _dhtpin, _dhttype );
 
 #define _ain7     7     //A7
 #define _ain6     6     //A6
 
+#include <avr/wdt.h>    //For Watching Dog
+#include <avr/sleep.h>  //For Sleep operation
+
 unsigned long buf = 0;  //long 類型有32bit，24/32才夠用或是位元旋轉才夠。
-//char strbuf[9];       //For show
 
-void setup(){
-  myRFTX.enableTransmit(2);   //发送端接D2号口（或其它口）
-  //Optional set protocol (default is 1, will work for most outlets)
-  myRFTX.setProtocol(2);      //非Remote Control
-  //Optional set pulse length(uS)
-  //myRFTX.setPulseLength(320);
-  //Optional set number of transmission repetitions
-  myRFTX.setRepeatTransmit(6);
+
+ISR(WDT_vect)   //watchdog interrupt
+{
+  wdt_disable(); // disable watchdog
+}
  
-  //mySwitch.enableReceive(0);//接收端接中斷INT0(D2),中斷INT1(D3)
-
-  Serial.begin(9600);//打开串口调试
+void goToSleep()  //Go to sleep process
+{ 
+  byte old_ADCSRA = ADCSRA;
+  ADCSRA = 0;     //disable ADC
+  MCUSR = 0;      //clear various "reset" flags     
+  //allow changes, disable reset
+  WDTCSR = bit (WDCE) | bit (WDE);
+  //set interrupt mode and an interval 
+  WDTCSR = bit (WDIE) | bit (WDP3) | bit (WDP0);    // set WDIE, and 8 seconds delay
+  wdt_reset();
+  
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);  
+  noInterrupts();           
+  sleep_enable();
+ 
+  //turn off brown-out enable in software
+  MCUCR = bit (BODS) | bit (BODSE);
+  MCUCR = bit (BODS); 
+  interrupts();             
+  sleep_cpu();  
+  sleep_disable();
+  
+  ADCSRA = old_ADCSRA;
+  
   dht22.begin();
-  pinMode(_ain7, INPUT);   // Arduino A0~A7 analog input(with NOPULL)
-  pinMode(LED, OUTPUT );
+  pinMode(_ain6, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
+  pinMode(_ain7, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
 }
 
+void setup(){
+  myRFTX.enableTransmit(2);   //发送端接D2号口（或其它口）  
+  myRFTX.setProtocol(2);      //非Remote Control (default is 1, will work for most outlets)
+  //myRFTX.setPulseLength(320); //Optional set pulse length(uS) 
+  myRFTX.setRepeatTransmit(6);  //Optional set number of transmission repetitions
+  //mySwitch.enableReceive(0);//接收端接中斷INT0(D2),中斷INT1(D3)
+
+  Serial.begin(9600);
+  pinMode(LED, OUTPUT );
+  dht22.begin();
+  pinMode(_ain6, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
+  pinMode(_ain7, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
+  Serial.println("Initial successful ID=0x55");
+}
 void loop(){
   //buf = 0x55000000; 
   // Reading temperature or humidity takes about 250 milliseconds!
@@ -48,8 +82,7 @@ void loop(){
   // Read temperature as Fahrenheit (isFahrenheit = true)
   float f = dht22.readTemperature(true);
 
-  //確認取回的溫溼度數據可用
-  if( isnan(h) || isnan(t)|| isnan(f))
+  if( isnan(h) || isnan(t)|| isnan(f))  //確認取回的溫溼度數據可用,若不!取ADC
   {
     Serial.print( " ADC " );
     //Serial.println( "Failed to read form DHT22" );
@@ -72,7 +105,6 @@ void loop(){
       buf = buf | 0x00080000;   //mask & clear 
     }
   }
-  //sprintf(strbuf, "%08x", buf);
   Serial.println(buf,HEX);
   
   //buf = buf+1;
@@ -90,5 +122,7 @@ void loop(){
   //In this example it's family 'b', group #3, device #2 */
   //myRFTX.switchOn('b', 3, 2);
   digitalWrite(LED,LOW);
-  delay(1000);
+  //delay(1000);
+  goToSleep();
+  //Serial.println("Wake up sleep");
 }
