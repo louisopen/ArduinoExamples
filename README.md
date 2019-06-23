@@ -10,3 +10,12 @@
 
 ### Stepping Motor
 > Stepper motor deriver by IO only
+
+### ASK 433MHz RX TX base on ADC or DHT22
+> Base on RCSwitch.h library
+> RX like a sniffer for RF receiver.
+> TX read from ADC or DHT sensor
+![Image](ASK433MHz_rx_data.jpg)
+
+
+

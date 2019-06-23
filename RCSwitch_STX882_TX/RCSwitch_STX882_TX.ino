@@ -1,5 +1,5 @@
 //*-- Sensor data by 433MHz --*//
-#define SENSOR_ID  0x55
+#define SENSOR_ID  0x55  //0x550.. or 0x554...
 #define LED 13        //D13
 
 //*-- ASK433 module --*//
@@ -11,7 +11,8 @@ RCSwitch myRFTX = RCSwitch();     //定义发送端
 #include <Wire.h>
 #include "DHT.h"
 #define _dhtpin   4     //D4
-#define _dhttype  DHT22
+#define _dhttype  DHT22 //DHT 22  (AM2302), AM2321
+//#define _dhttype DHT21  //DHT 21 (AM2301)
 DHT dht22( _dhtpin, _dhttype );
 
 #define _ain7     7     //A7
@@ -38,25 +39,39 @@ void setup(){
 }
 
 void loop(){
-  buf = 0x55000000; 
-  unsigned long val7 = analogRead(_ain7);   //本應該unsigned int, 5V/1024=4.88mV
-  buf = buf |(val7 << 14);  //10bit to 8bit 5V/256=19mV
-  buf = buf & 0xFFFF0000;   //mask & clear 
-  
+  //buf = 0x55000000; 
+  // Reading temperature or humidity takes about 250 milliseconds!
+  // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht22.readHumidity();
-  float t = dht22.readTemperature();
+  // Read temperature as Celsius (the default)
+  float t = dht22.readTemperature()* 10; //+-0.5 (range -40~+80)  
+  // Read temperature as Fahrenheit (isFahrenheit = true)
+  float f = dht22.readTemperature(true);
+
   //確認取回的溫溼度數據可用
-  if( isnan(h) || isnan(t) )
+  if( isnan(h) || isnan(t)|| isnan(f))
   {
-    Serial.println( "Failed to read form DHT22" );
+    Serial.print( " ADC " );
+    //Serial.println( "Failed to read form DHT22" );
+    buf = 0x55400000; 
+    unsigned long val6 = analogRead(_ain6);   //本應該unsigned int, 5V/1024=4.88mV (Rs=4.3K 1%)
+    unsigned long val7 = analogRead(_ain7);   //本應該unsigned int, 5V/1024=4.88mV (Rs=4.3K 1%)
+
+    buf = buf |(val6 << 8);  //10bit 5V/1024=4.88mV per. count
+    buf = buf |(val7 >> 2);  //10bit to 8bit 5V/256=19mV per. count
   }
   else
   {
-      //DHT22 溫濕度數據儲存
-      buf = buf |((uint8_t)t << 8);
-      buf = buf |(uint8_t)h;
+    Serial.print( "Read Form DHT " );
+    buf = 0x55000000; 
+    //DHT22 溫濕度數據儲存
+    buf = buf |((uint8_t)t)<< 8;
+    buf = buf |(uint8_t)h;
+    if(t<0)
+    {
+      buf = buf | 0x00080000;   //mask & clear 
+    }
   }
-  
   //sprintf(strbuf, "%08x", buf);
   Serial.println(buf,HEX);
   
