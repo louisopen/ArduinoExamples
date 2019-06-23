@@ -1,6 +1,6 @@
 //*-- Sensor data by 433MHz --*//
-#define SENSOR_ID  0x55  //0x550.. or 0x554...
-#define LED 13        //D13
+#define SENSOR_ID  0x55 //0x550.. or 0x555... address 12bits
+#define LED 13          //D13
 
 //*-- ASK433 module --*//
 #include <RCSwitch.h>
@@ -10,8 +10,8 @@ RCSwitch myRFTX = RCSwitch();
 //*-- DHT22 --*//
 #include <Wire.h>
 #include "DHT.h"
-#define _dhtpin   4       //D4
-#define _dhttype  DHT22   //DHT 22  (AM2302), AM2321
+#define _dhtpin   4      //D4
+#define _dhttype  DHT22  //DHT 22  (AM2302), AM2321
 //#define _dhttype DHT21  //DHT 21 (AM2301)
 DHT dht22( _dhtpin, _dhttype );
 
@@ -70,15 +70,14 @@ void setup(){
   dht22.begin();
   pinMode(_ain6, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
   pinMode(_ain7, INPUT);    //Arduino A0~A7 analog input(with NOPULL)
-  Serial.println("Initial successful ID=0x55");
+  Serial.println("Initial successful ID=0x555");
 }
 void loop(){
-  //buf = 0x55000000; 
   // Reading temperature or humidity takes about 250 milliseconds!
   // Sensor readings may also be up to 2 seconds 'old' (its a very slow sensor)
   float h = dht22.readHumidity();
   // Read temperature as Celsius (the default)
-  float t = dht22.readTemperature()* 10; //+-0.5 (range -40~+80)  
+  float t = dht22.readTemperature(); //+-0.5 (range -40~+80)  
   // Read temperature as Fahrenheit (isFahrenheit = true)
   float f = dht22.readTemperature(true);
 
@@ -86,7 +85,7 @@ void loop(){
   {
     Serial.print( " ADC " );
     //Serial.println( "Failed to read form DHT22" );
-    buf = 0x55400000; 
+    buf = 0x55500000; 
     unsigned long val6 = analogRead(_ain6);   //本應該unsigned int, 5V/1024=4.88mV (Rs=4.3K 1%)
     unsigned long val7 = analogRead(_ain7);   //本應該unsigned int, 5V/1024=4.88mV (Rs=4.3K 1%)
 
@@ -98,11 +97,11 @@ void loop(){
     Serial.print( "Read Form DHT " );
     buf = 0x55000000; 
     //DHT22 溫濕度數據儲存
-    buf = buf |((uint8_t)t)<< 8;
+    buf = buf |((uint8_t)t * 2) << 8;
     buf = buf |(uint8_t)h;
     if(t<0)
     {
-      buf = buf | 0x00080000;   //mask & clear 
+      buf = buf | 0x00010000;   //mask & clear "-"
     }
   }
   Serial.println(buf,HEX);
