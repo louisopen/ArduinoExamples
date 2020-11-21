@@ -1,17 +1,41 @@
+//****************************************************************//
 //*-- Sensor applications (DS18b20,NTC103AT,DHT22)to RF 433MHz --*//
-#define SENSOR_TYPE_DS18b20   //魚池溫度用,五米長, 若無定義為DHT22 sensor  Louis:20190911
-
+//* 魚池可使用DS18B02溫度sensor 5米或2米長                           *//
+//* 室內溫濕度則可以用DHT22 或 NTC 103AT(板載插件)                    *//
+//* Arduino Pro-mini 注意你所使用的電源5V or 3.3V 必須選擇確定的板型號  *//
+//****************************************************************//
+//#define SENSOR_TYPE_DS18b20 //使用定義為DS18B02 若無定義則為使用DHT22 sensor  
+//****************************************************************//
 #include <avr/wdt.h>          //For System Watching-Dog
 #include <avr/sleep.h>        //For System Sleep mode operation
 #include <avr/power.h>        //For System power setting operation
-
+//****************************************************************//
 //*-- Define RF ID data by 433MHz --*//
-#define SENSOR_ID0 0x33300000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用
-#define SENSOR_ID1 0x33320000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DHT22溫濕度數據專用
-#define SENSOR_ID2 0x33340000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DS18b20溫度數據專用
-#define SENSOR_ID3 0x33333000 //0xFFFFF0   address(20bits) + 0xF data(4bits) for keyfob
+#define SENSOR_ID0 0x33200000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+//#define SENSOR_ID0 0x33220000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+//#define SENSOR_ID0 0x33240000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+//#define SENSOR_ID0 0x33260000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+//#define SENSOR_ID0 0x33280000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+//#define SENSOR_ID0 0x332A0000 //0xFFFE0000 address(15bits) + 0x0000FFFF data(16bits) for Ain6,Ain7    //ADC數據專用0x3320-0x332E-
+
+#define SENSOR_ID1 0x33380000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DHT22溫濕度數據專用
+//#define SENSOR_ID1 0x333A0000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DHT22溫濕度數據專用
+//#define SENSOR_ID1 0x333C0000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DHT22溫濕度數據專用
+//#define SENSOR_ID1 0x333E0000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DHT22溫濕度數據專用
+
+//#define SENSOR_ID2 0x33300000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DS18b20溫度數據專用
+#define SENSOR_ID2 0x33320000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DS18b20溫度數據專用
+//#define SENSOR_ID2 0x33340000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DS18b20溫度數據專用
+//#define SENSOR_ID2 0x33360000 //0xFFFE0000 address(15bits) + 0x00010000 sign bit(1bit)+0x0000FFFF data(16bits) //DS18b20溫度數據專用
+
+//#define SENSOR_ID3 0x33430000 //0xFFFFF0   address(20bits) + 0xF data(4bits) for keyfob //Keyfob 大都為24bit結構
+//#define SENSOR_ID3 0x33431000 //0xFFFFF0   address(20bits) + 0xF data(4bits) for keyfob
+//#define SENSOR_ID3 0x33432000 //0xFFFFF0   address(20bits) + 0xF data(4bits) for keyfob
+//#define SENSOR_ID3 0x33433000 //0xFFFFF0   address(20bits) + 0xF data(4bits) for keyfob
+
 //#define DataBit 24            //24 bits shift out standar application for Key-chan or keyfob
 #define DataBit 32            //32 bits shift out 24~32 bits
+
 #define OnBoardLED 13         //D13 for the system states
 
 //*-- ASK433 module --*//
@@ -95,7 +119,7 @@ void init_application(){
 /**********************************************************/
 /**********************************************************/
 void setup(){
-  Serial.begin(115200); //for debug
+  Serial.begin(9600); //for debug
   pinMode(OnBoardLED, OUTPUT );
   Serial.println("Initial successful ID=0x3333(12bits):function+Sign(4bits):data(16bits)");
 
